@@ -1,4 +1,5 @@
 declare module 'vite-plugin-eslint' {
-    export default function eslint(options?: unknown): unknown;
+    import { Plugin } from 'vite';
+    export default function eslint(): Plugin;
   }
   
