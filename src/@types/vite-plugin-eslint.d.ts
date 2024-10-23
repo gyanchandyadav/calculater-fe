@@ -1,7 +1,7 @@
 declare module 'vite-plugin-eslint' {
     import { Plugin } from 'vite';
 
-    interface ViteEslintOptions {
+    interface EslintOptions {
         eslintPath?: string;
         lintOnStart?: boolean;
         include?: string[];
@@ -14,7 +14,5 @@ declare module 'vite-plugin-eslint' {
         errorOnUnmatchedPattern?: boolean;
     }
 
-    function eslint(options?: ViteEslintOptions): Plugin;
-
-    export default eslint;
+    export default function eslint(options?: EslintOptions): Plugin;
 }
