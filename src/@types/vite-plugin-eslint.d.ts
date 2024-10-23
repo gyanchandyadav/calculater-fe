@@ -6,7 +6,7 @@ declare module 'vite-plugin-eslint' {
         lintOnStart?: boolean;
         include?: string[];
         exclude?: string[];
-        formatter?: string | ((results: any) => string);
+        formatter?: string | ((results: unknown) => string);
         emitWarning?: boolean;
         emitError?: boolean;
         failOnWarning?: boolean;
