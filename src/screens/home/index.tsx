@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
 import { SWATCHES } from '@/constants';
+import { FaPen } from 'react-icons/fa'; // Importing the pen icon
 
 interface GeneratedResult {
     expression: string;
@@ -105,29 +106,32 @@ export default function Home() {
         }
     };
 
-    const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+        e.preventDefault(); // Prevent default behavior for touch events
         const canvas = canvasRef.current;
         if (canvas) {
             canvas.style.background = 'black';
             const ctx = canvas.getContext('2d');
             if (ctx) {
+                const { offsetX, offsetY } = getOffset(e);
                 ctx.beginPath();
-                ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+                ctx.moveTo(offsetX, offsetY);
                 setIsDrawing(true);
             }
         }
     };
 
-    const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
         if (!isDrawing) return;
         const canvas = canvasRef.current;
         if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
+                const { offsetX, offsetY } = getOffset(e);
                 ctx.lineWidth = lineWidth;
                 ctx.strokeStyle = tool === 'eraser' ? 'black' : color;
                 ctx.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
-                ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+                ctx.lineTo(offsetX, offsetY);
                 ctx.stroke();
             }
         }
@@ -135,6 +139,17 @@ export default function Home() {
 
     const stopDrawing = () => {
         setIsDrawing(false);
+    };
+
+    const getOffset = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+        if ('touches' in e) {
+            const touch = e.touches[0];
+            return {
+                offsetX: touch.clientX - canvasRef.current!.getBoundingClientRect().left,
+                offsetY: touch.clientY - canvasRef.current!.getBoundingClientRect().top,
+            };
+        }
+        return { offsetX: e.nativeEvent.offsetX, offsetY: e.nativeEvent.offsetY };
     };
 
     const runRoute = async () => {
@@ -203,7 +218,7 @@ export default function Home() {
                     ))}
                 </Group>
                 <Button onClick={() => setTool('pen')} className='z-20' variant={tool === 'pen' ? 'default' : 'outline'}>
-                    Pen
+                    <FaPen className="inline-block mr-1" /> Pen
                 </Button>
                 <Button onClick={() => setTool('eraser')} className='z-20' variant={tool === 'eraser' ? 'default' : 'outline'}>
                     Eraser
@@ -231,6 +246,11 @@ export default function Home() {
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
                 onMouseOut={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
+                onTouchCancel={stopDrawing}
+                style={{ touchAction: 'none' }} // Prevent default touch actions (like scrolling)
             />
 
             {latexExpression.map((latex, index) => (
